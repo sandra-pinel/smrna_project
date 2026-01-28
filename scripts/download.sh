@@ -19,29 +19,28 @@ echo
 
 # This script should download the file specified in the first argument ($1),
 # place it in the directory specified in the second argument ($2),
-echo "Descargando archivo de $URL, guardándolo en $DIR"
+echo "Descargando archivo de $URL, guardándolo en la carpeta $DIR..."
+mkdir -p $DIR
 wget $URL -P $DIR
-filename=$(basename $URL)
 
+echo 
+
+# uncompress the dowloaded file with gunzip if the third argument $3 is 'yes'
 if [ "$UNZIP" == "yes" ]
 then
     filename=$(basename $URL)
-    gunzip -k $DIR/$filename
+    echo "Descomprimiendo $filename..."
+    gunzip -k ${DIR}/${filename}
+    unzip_filename=$(basename $URL .gz)
+fi
 
+# filter the sequences based on a word contained in their header lines:
+#sequences containing the specified word in their header should be **excluded**
 
-# and *optionally*:
-# - uncompress the downloaded file with gunzip if the third
-#   argument ($3) contains the word "yes"
-# - filter the sequences based on a word contained in their header lines:
-#   sequences containing the specified word in their header should be **excluded**
-#
-# Example of the desired filtering:
-#
-#   > this is my sequence
-#   CACTATGGGAGGACATTATAC
-#   > this is my second sequence
-#   CACTATGGGAGGGAGAGGAGA
-#   > this is another sequence
-#   CCAGGATTTACAGACTTTAAA
-#
-#   If $4 == "another" only the **first two sequence** should be output
+if [ -n "$FILTER" ]
+then
+    echo "Filtrando secuencias de $FILTER"
+    filter_filename=$(basename $URL .fasta.gz)
+    seqkit grep -v -r -p "$FILTER" "${DIR}/${unzip_filename}" > "${DIR}/${filter_filename}_filtered.fasta"
+fi
+

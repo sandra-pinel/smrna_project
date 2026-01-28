@@ -1,3 +1,4 @@
+
 #Download all the files specified in data/filenames
 URL_FILE=data/urls
 while read url
@@ -7,7 +8,8 @@ done < $URL_FILE
 
 # Download the contaminants fasta file, uncompress it, and
 # filter to remove all small nuclear RNAs
-bash scripts/download.sh <contaminants_url> res yes #TODO
+URL_contam=https://bioinformatics.cnio.es/data/courses/decont/contaminants.fasta.gz
+bash scripts/download.sh $URL_contam res yes "snRNA|small nuclear" 
 
 # Index the contaminants file
 bash scripts/index.sh res/contaminants.fasta res/contaminants_idx
