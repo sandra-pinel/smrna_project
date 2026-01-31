@@ -10,10 +10,10 @@ done < $URLS_FASTQ
 URL_FASTA=https://masterbioinformatica.com/decont/contaminants.fasta.gz
 bash scripts/download.sh $URL_FASTA res yes "snRNA|small nuclear" 
 
-exit 0 # added for debugging code above
-
 # Index the contaminants file
-bash scripts/index.sh res/contaminants.fasta res/contaminants_idx
+bash scripts/index.sh res/contaminants_filtered.fasta res/contaminants_idx
+
+exit 0 # added for debugging code above
 
 # Merge the samples into a single file
 for sid in $(<list_of_sample_ids>) #TODO

@@ -1,3 +1,4 @@
+# Check for required arguments
 if [ -z "$1" ] || [ -z "$2" ]
 then
     echo "Usage: $0 <URL> <DIR> [UNZIP] [FILTER] "
@@ -5,8 +6,9 @@ then
     echo "  DIR       : Carpeta destino (obligatorio)"
     echo "  UNZIP     : 'yes' si quieres descomprimir el archivo descargado (opcional)"
     echo "  FILTER    : palabra para excluir secuencias de headers FASTA (opcional)"
-    exit 1
     echo " Saliendo del programa..."
+    exit 1
+    
 fi
 
 URL=$1
@@ -34,13 +36,13 @@ if [ "$UNZIP" == "yes" ]
 then
     unzipped_filepath="${filepath%.gz}" # ${variable%patrón} --> Removes the end of a string that matches the pattern    
 
-    if [ ! -f $unzipped_filepath ] # If this file DOES NOT EXIST ...
+    if [ ! -f "$unzipped_filepath" ] # If this file DOES NOT EXIST ...
     then
         echo "Descomprimiendo $filename..."
         gunzip -k $filepath
         echo "El archivo $filename ha sido filtrado y guardado como $(basename $unzipped_filepath) en $DIR"
     else
-        echo "El archivo $unzipped_filepath" ya existe, saltando descomprensión
+        echo "El archivo $unzipped_filepath ya existe, saltando descomprensión."
     fi   
 fi
 
@@ -53,11 +55,14 @@ if [ -n "$FILTER" ]; then
     filtered_filepath="${unzipped_filepath%.fasta}_filtered.fasta"
     
     # Only filter if the filtered file doesn't exist yet
-    if [ ! -f "$filtered_filepath" ]; then
-        echo "Filtrando secuencias con el siguiente patrón: '$FILTER'..."
+    if [ ! -f "$filtered_filepath" ]
+    then
+        echo "Eliminando de $(basename $unzipped_filepath) secuencias con el siguiente patrón en el header: '$FILTER'..."
         # Using seqkit grep to exclude (-v) the patterns (-p)
         seqkit grep -v -r -n -p "$FILTER" "$unzipped_filepath" > "$filtered_filepath"
-        echo "El archivo $(basename $unzipped_filepath) ha sido filtrado y guardado como $(basename $filtered_filepath) en $DIR"
+        rm -f $unzipped_filepath # remove not filtered fasta (for space)
+        echo "El archivo $(basename $unzipped_filepath) ha sido filtrado y guardado como $(basename $filtered_filepath)."
+        echo "Eliminando archivo fasta no filtrado: $(basename $unzipped_filepath)"
     else
         echo "El archivo $(basename $filtered_filepath) ya existe, saltando filtrado."
     fi
