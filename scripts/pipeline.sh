@@ -1,15 +1,16 @@
-
 #Download all the files specified in data/filenames
-URL_FILE=data/urls
+URLS_FASTQ=data/urls
 while read url
 do
     bash scripts/download.sh $url data
-done < $URL_FILE
+done < $URLS_FASTQ
 
 # Download the contaminants fasta file, uncompress it, and
 # filter to remove all small nuclear RNAs
-URL_contam=https://bioinformatics.cnio.es/data/courses/decont/contaminants.fasta.gz
-bash scripts/download.sh $URL_contam res yes "snRNA|small nuclear" 
+URL_FASTA=https://masterbioinformatica.com/decont/contaminants.fasta.gz
+bash scripts/download.sh $URL_FASTA res yes "snRNA|small nuclear" 
+
+exit 0 # added for debugging code above
 
 # Index the contaminants file
 bash scripts/index.sh res/contaminants.fasta res/contaminants_idx
