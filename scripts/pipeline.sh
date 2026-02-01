@@ -13,13 +13,13 @@ bash scripts/download.sh $URL_FASTA res yes "snRNA|small nuclear"
 # Index the contaminants file
 bash scripts/index.sh res/contaminants_filtered.fasta res/contaminants_idx
 
-exit 0 # added for debugging code above
-
 # Merge the samples into a single file
-for sid in $(<list_of_sample_ids>) #TODO
+for sid in $(ls data/*.fastq.gz | cut -d"-" -f1 | sed "s:data/::" | sort | uniq) 
 do
     bash scripts/merge_fastqs.sh data out/merged $sid
 done
+
+exit 0 # added for debugging code above
 
 # TODO: run cutadapt for all merged files
 # cutadapt -m 18 -a TGGAATTCTCGGGTGCCAAGG --discard-untrimmed \
@@ -41,3 +41,5 @@ done
 # - cutadapt: Reads with adapters and total basepairs
 # - star: Percentages of uniquely mapped reads, reads mapped to multiple loci, and to too many loci
 # tip: use grep to filter the lines you're interested in
+
+

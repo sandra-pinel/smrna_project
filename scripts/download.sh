@@ -1,12 +1,12 @@
 # Check for required arguments
 if [ -z "$1" ] || [ -z "$2" ]
 then
-    echo "Usage: $0 <URL> <DIR> [UNZIP] [FILTER] "
-    echo "  URL       : URL del archivo a descargar (obligatorio)"
-    echo "  DIR       : Carpeta destino (obligatorio)"
-    echo "  UNZIP     : 'yes' si quieres descomprimir el archivo descargado (opcional)"
-    echo "  FILTER    : palabra para excluir secuencias de headers FASTA (opcional)"
-    echo " Saliendo del programa..."
+    echo "Usage: $0 <URL> <DIR> [UNZIP] [FILTER]"
+    echo "  URL    : File URL (mandatory)"
+    echo "  DIR    : Destination directory (mandatory)"
+    echo "  UNZIP  : 'yes' to decompress (optional)"
+    echo "  FILTER : pattern to exclude FASTA headers (optional)"
+    echo "Exiting program..."
     exit 1
     
 fi
@@ -25,7 +25,7 @@ echo
 
 # This script should download the file specified in the first argument ($1),
 # place it in the directory specified in the second argument ($2),
-echo "Descargando archivo de $URL, guardándolo en la carpeta $DIR..."
+echo "Downloading file from $URL to $DIR..."
 mkdir -p $DIR
 wget -nc $URL -P $DIR #save in DIR and if it exists it skips the download (nc, no-clobber)
 
@@ -38,11 +38,11 @@ then
 
     if [ ! -f "$unzipped_filepath" ] # If this file DOES NOT EXIST ...
     then
-        echo "Descomprimiendo $filename..."
+        echo "Descompressing $filename..."
         gunzip -k $filepath
-        echo "El archivo $filename ha sido filtrado y guardado como $(basename $unzipped_filepath) en $DIR"
+        echo "File $filename decompressed as $(basename $unzipped_filepath) in $DIR."
     else
-        echo "El archivo $unzipped_filepath ya existe, saltando descomprensión."
+        echo "File $unzipped_filepath already exists, skipping decompression."
     fi   
 fi
 
@@ -50,21 +50,25 @@ echo
 # filter the sequences based on a word contained in their header lines
 # sequences containing the specified word in their header should be **excluded**
 
-if [ -n "$FILTER" ]; then
-
+if [ -n "$FILTER" ]
+then
     filtered_filepath="${unzipped_filepath%.fasta}_filtered.fasta"
     
     # Only filter if the filtered file doesn't exist yet
     if [ ! -f "$filtered_filepath" ]
     then
-        echo "Eliminando de $(basename $unzipped_filepath) secuencias con el siguiente patrón en el header: '$FILTER'..."
-        # Using seqkit grep to exclude (-v) the patterns (-p)
+        echo "Removing sequences from $(basename "$unzipped_filepath") with pattern: '$FILTER'..."
+        # Using seqkit grep to exclude (-v) the patterns (-p) using regex (-r), -n (full header name)
         seqkit grep -v -r -n -p "$FILTER" "$unzipped_filepath" > "$filtered_filepath"
-        rm -f $unzipped_filepath # remove not filtered fasta (for space)
         echo "El archivo $(basename $unzipped_filepath) ha sido filtrado y guardado como $(basename $filtered_filepath)."
-        echo "Eliminando archivo fasta no filtrado: $(basename $unzipped_filepath)"
+        
     else
-        echo "El archivo $(basename $filtered_filepath) ya existe, saltando filtrado."
+        echo "Filtered file $(basename "$filtered_filepath") already exists, skipping filtering."
     fi
+
+    # Remove not filtered fasta (for space)
+    echo "Removing unfiltered FASTA file: $(basename "$unzipped_filepath")..."
+    rm -f $unzipped_filepath 
+    echo "File $unzipped_filepath has been removed."
 fi
 
