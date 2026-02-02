@@ -20,13 +20,42 @@ mkdir -p "$DIR"
 filename=$(basename "$URL")
 filepath="${DIR}/${filename}"
 
-
 echo 
 
 # This script should download the file specified in the first argument ($1),
 # place it in the directory specified in the second argument ($2),
 echo "Downloading file from $URL to $DIR..."
 wget -nc $URL -P $DIR #save in DIR and if it exists it skips the download (nc, no-clobber)
+
+
+#----- MD5 check ------
+md5_url="${URL}.md5"
+# Intenta descargar el MD5 remoto solo si existe
+if wget --spider -q "$md5_url"
+then
+    echo "Verifying MD5 for $filename..."
+    local_md5=$(md5sum "$filepath" | cut -d' ' -f1)
+    remote_md5=$(wget -q -O - "$md5_url" | awk '{print $1}')
+
+    if [ "$local_md5" != "$remote_md5" ]
+    then
+        echo "MD5 Checksum failed for $filename, re-downloading..."
+        wget -O "$filepath" "$URL"
+
+        local_md5=$(md5sum "$filepath" | cut -d' ' -f1)
+        if [ "$local_md5" != "$remote_md5" ]
+        then
+            echo "MD5 Checksum failed again. Exiting."
+            exit 1
+        else
+            echo "MD5 Checksum passed after re-download."
+        fi
+    else
+        echo "MD5 Checksum passed."
+    fi
+else
+    echo "No MD5 file found for $filename, skipping checksum."
+fi
 
 echo 
 
@@ -79,4 +108,3 @@ then
     rm -f $unzipped_filepath 
     echo "File $unzipped_filepath has been removed."
 fi
-

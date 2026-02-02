@@ -1,3 +1,5 @@
+set -euo pipefail # if something fails the script stops
+
 #Download all the files specified in data/filenames
 URLS_FASTQ=data/urls
 while read url

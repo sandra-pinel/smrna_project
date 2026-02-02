@@ -25,9 +25,14 @@ mkdir -p "$OUT_DIR"
 
 echo 
 # Indexing command
-echo "Indexing $(basename $FASTA_FILE)..."
-STAR --runThreadN 4 --runMode genomeGenerate \
---genomeDir $OUT_DIR \
---genomeFastaFiles $FASTA_FILE \
---genomeSAindexNbases 9
-echo "$(basename $FASTA_FILE) has been indexed and stored in $OUT_DIR."
+if [ ! -f "${OUT_DIR}/Genome" ]
+then
+    echo "Indexing $(basename $FASTA_FILE)..."
+    STAR --runThreadN 4 --runMode genomeGenerate \
+    --genomeDir $OUT_DIR \
+    --genomeFastaFiles $FASTA_FILE \
+    --genomeSAindexNbases 9
+    echo "$(basename $FASTA_FILE) has been indexed and stored in $OUT_DIR."
+else
+    echo "STAR index already exists in $OUT_DIR, skipping indexing"
+fi
