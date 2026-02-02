@@ -1,5 +1,9 @@
 set -euo pipefail # if something fails the script stops
 
+# Initialize pipeline log 
+pipeline_log="log/pipeline.log"
+echo "Pipeline run: $(date)" > "$pipeline_log" # >> inestead of > for appendind and not overwriting
+
 #Download all the files specified in data/filenames
 URLS_FASTQ=data/urls
 while read url
@@ -14,12 +18,6 @@ bash scripts/download.sh $URL_FASTA res yes "snRNA|small nuclear"
 
 # Index the contaminants file
 bash scripts/index.sh res/contaminants_filtered.fasta res/contaminants_idx
-
-
-# Initialize pipeline log 
-pipeline_log="log/pipeline.log"
-echo "Pipeline run: $(date)" > "$pipeline_log" # >> inestead of > for appendind and not overwriting
-
 
 #Merge, trim. align and append logs
 for sid in $(ls data/*.fastq.gz | cut -d"-" -f1 | sed "s:data/::" | sort | uniq) 
