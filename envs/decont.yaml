@@ -1,0 +1,10 @@
+name: smrna_decontam
+channels:
+  - conda-forge
+  - bioconda
+  - nodefaults
+dependencies:
+  - seqkit
+  - star
+  - cutadapt
+prefix: /home/vant/miniforge3/envs/smrna_decontam

@@ -26,16 +26,22 @@ echo
 # This script should download the file specified in the first argument ($1),
 # place it in the directory specified in the second argument ($2),
 echo "Downloading file from $URL to $DIR..."
-mkdir -p $DIR
 wget -nc $URL -P $DIR #save in DIR and if it exists it skips the download (nc, no-clobber)
 
 echo 
 
+# Safety check
+if [ -n "$FILTER" ] && [ "$UNZIP" != "yes" ]
+then
+    echo "ERROR: FILTER requires UNZIP=yes (FASTA must be decompressed first)"
+    exit 1
+fi
+
 # uncompress the dowloaded file with gunzip if the third argument $3 is 'yes'
+unzipped_filepath="${filepath%.gz}" # ${variable%patrón} --> Removes the end of a string that matches the pattern    
+
 if [ "$UNZIP" == "yes" ]
 then
-    unzipped_filepath="${filepath%.gz}" # ${variable%patrón} --> Removes the end of a string that matches the pattern    
-
     if [ ! -f "$unzipped_filepath" ] # If this file DOES NOT EXIST ...
     then
         echo "Descompressing $filename..."
@@ -47,10 +53,11 @@ then
 fi
 
 echo
+
 # filter the sequences based on a word contained in their header lines
 # sequences containing the specified word in their header should be **excluded**
 
-if [ -n "$FILTER" ]
+if [ "$UNZIP" == "yes" ] && [ -n "$FILTER" ] # for filtering fasta decompression is needed
 then
     filtered_filepath="${unzipped_filepath%.fasta}_filtered.fasta"
     
@@ -58,7 +65,8 @@ then
     if [ ! -f "$filtered_filepath" ]
     then
         echo "Removing sequences from $(basename "$unzipped_filepath") with pattern: '$FILTER'..."
-        # Using seqkit grep to exclude (-v) the patterns (-p) using regex (-r), -n (full header name)
+        # # filter the sequences based on a word contained in their header lines
+
         seqkit grep -v -r -n -p "$FILTER" "$unzipped_filepath" > "$filtered_filepath"
         echo "El archivo $(basename $unzipped_filepath) ha sido filtrado y guardado como $(basename $filtered_filepath)."
         

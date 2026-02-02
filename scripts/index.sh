@@ -11,17 +11,23 @@ then
     exit 1
 fi
 
-FASTA_DIR=$1
+FASTA_FILE=$1
 OUT_DIR=$2
+
+if [ ! -f "$FASTA_FILE" ]
+then
+    echo "ERROR: FASTA file $FASTA_FILE not found"
+    exit 1
+fi
 
 # Create the output directory if it doesn't exist
 mkdir -p "$OUT_DIR"
 
 echo 
 # Indexing command
-echo "Indexing $(basename $FASTA_DIR)..."
+echo "Indexing $(basename $FASTA_FILE)..."
 STAR --runThreadN 4 --runMode genomeGenerate \
 --genomeDir $OUT_DIR \
---genomeFastaFiles $FASTA_DIR \
+--genomeFastaFiles $FASTA_FILE \
 --genomeSAindexNbases 9
-echo "$(basename $FASTA_DIR) has been indexed and stored in $OUT_DIR."
+echo "$(basename $FASTA_FILE) has been indexed and stored in $OUT_DIR."
